@@ -48,6 +48,11 @@ class ChangePasswordForm(forms.ModelForm):
         )
     )
 
+    class Meta:
+
+        model = User
+        fields = []
+
     def clean(self):
         cleaned_data = super(ChangePasswordForm, self).clean()
         password = cleaned_data.get("password")

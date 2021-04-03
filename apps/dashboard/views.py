@@ -1,6 +1,7 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse
 from .models import User
 from .forms.access import LoginForm, RegisterForm
+from .forms.admin import EditUserForm, ChangePasswordForm
 import bcrypt
 
 
@@ -60,7 +61,7 @@ def register(request):
                                     bcrypt.gensalt()).decode()
             registered_user.password_hash = pw_hash
 
-            users = User.objects.all()
+            users = User.objects.filter(level=9)
             if users:
                 registered_user.level = 0
             else:
@@ -119,6 +120,102 @@ def dashboard(request):
     return redirect('/')
 
 
+def admin_edit_user(request, id):
+
+    if "user_id" in request.session:
+        user = User.objects.filter(id=request.session["user_id"])
+        if user:
+            logged_user = user[0]
+
+            if logged_user.level == 9:
+
+                user_with_id = User.objects.filter(id=id)
+                if not user_with_id:
+                    return redirect('/dashboard/admin')
+                user_to_edit = user_with_id[0]
+
+                if request.method == "GET":
+                    edit_user_form = EditUserForm(instance=user_to_edit)
+
+                if request.method == "POST":
+
+                    if id == request.session["user_id"]:
+                        if request.POST["level"] != 9:
+                            response = not_allowed("leave admin level by yourself")
+                            return response
+
+                    edit_user_form = EditUserForm(request.POST,
+                                                  instance=user_to_edit)
+                    if edit_user_form.is_valid():
+                        edit_user_form.save()
+                        return redirect('/dashboard/admin')
+
+                change_password_form = ChangePasswordForm()
+                log_url, log_text = set_log_link(request.session)
+                context = {"edit_user_form": edit_user_form,
+                           "change_password_form": change_password_form,
+                           "user_to_edit_id": user_to_edit.id,
+                           "log_text": log_text,
+                           "log_url": log_url}
+
+                return render(request, "edit_user.html", context)
+
+            else:
+                return redirect('/users/edit')
+
+    return redirect('/')
+
+
+def admin_change_password(request, id):
+
+    user = User.objects.filter(id=id)
+    if not user:
+        return redirect('/dashboard/admin/')
+    user_to_edit = user[0]
+    edit_user_form = EditUserForm(instance=user_to_edit)
+
+    if request.method == "GET":
+        return redirect('/dashboard/admin/')
+
+    if request.method == "POST":
+        change_password_form = ChangePasswordForm(request.POST)
+        if change_password_form.is_valid():
+            password = request.POST["password"]
+            pw_hash = bcrypt.hashpw(password.encode(),
+                                    bcrypt.gensalt()).decode()
+            user_to_edit.password_hash = pw_hash
+            user_to_edit.save()
+            return redirect('/users/edit/' + str(id))
+        else:
+            log_url, log_text = set_log_link(request.session)
+            context = {"edit_user_form": edit_user_form,
+                       "change_password_form": change_password_form,
+                       "user_to_edit_id": user_to_edit.id,
+                       "log_text": log_text,
+                       "log_url": log_url}
+            return render(request, "edit_user.html", context)
+
+
+def admin_remove_user(request, id):
+
+    if "user_id" in request.session:
+        user = User.objects.filter(id=request.session["user_id"])
+        if user:
+            logged_user = user[0]
+            if logged_user.level == 9:
+
+                if id == request.session["user_id"]:
+                    response = not_allowed("remove yourself")
+                    return response
+
+                user = User.objects.filter(id=id)
+                if user:
+                    user_to_remove = user[0]
+                    user_to_remove.delete()
+
+    return redirect('/dashboard/admin')
+
+
 def set_log_link(request_session):
     if "user_id" in request_session:
         log_text = "Log out"
@@ -127,3 +224,11 @@ def set_log_link(request_session):
         log_text = "Log in"
         log_url = "/login"
     return log_url, log_text
+
+
+def not_allowed(action_string):
+    response = HttpResponse()
+    response.write("<p>You can't " + action_string + "!</p>")
+    response.write("<p>Ask another admin to do that.</p>")
+    response.write("<p><a href='/dashboard/admin'>Go to dashboard</a></p>")
+    return response

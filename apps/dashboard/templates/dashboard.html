@@ -24,7 +24,10 @@
       <td>{{ user.created_at }}</td>
       <td>{% if user.level == 9 %}Admin{% else %}Normal{% endif %}</td>
       {% if is_admin %}
-      <td>edit remove</td>
+      <td>
+        <a href="{% url 'admin_edit_user' user.id %}">edit</a>
+        <a href="{% url 'admin_remove_user' user.id %}">remove</a>
+      </td>
       {% endif %}
     </tr>
     {% endfor %}
