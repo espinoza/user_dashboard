@@ -33,11 +33,14 @@ class RegisterForm(forms.ModelForm):
         password = cleaned_data.get("password")
         confirm_password = cleaned_data.get("confirm_password")
 
-        if password != confirm_password:
-            raise forms.ValidationError({"confirm_password": "Passwords don't match"})
         errors = validate_registration_password(password)
         if errors:
             raise forms.ValidationError({"password": errors})
+
+        if password != confirm_password:
+            raise forms.ValidationError({"confirm_password":
+                                         "Passwords don't match"})
+
         return cleaned_data
 
     def clean_email(self):
