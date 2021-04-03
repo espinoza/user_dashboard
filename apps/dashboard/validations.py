@@ -35,16 +35,18 @@ def validate_registration_email(email):
 def validate_login(password, email):
 
     errors = validate_email(email)
+    if errors:
+        return {"email": errors}
 
     user = User.objects.filter(email=email)
     if user:
         logged_user = user[0]
         if not bcrypt.checkpw(password.encode(), logged_user.password_hash.encode()):
-            errors.append("Wrong password")
+            return {"password": "Wrong password"}
     else:
-        errors.append("There is no user with this email")
+        return {"email": "There is no user with this email"}
 
-    return errors
+    return {}
 
 
 def validate_email(email):

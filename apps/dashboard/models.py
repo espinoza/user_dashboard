@@ -36,8 +36,10 @@ class User(models.Model):
 class Message(models.Model):
 
     content = models.CharField(max_length=10000)
-    user = models.ForeignKey(User, on_delete=models.CASCADE,
-                             related_name="messages")
+    sender_user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name="sent_messages")
+    recipient_user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name="received_messages")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'user_dashboard.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql', # cambiar la base de datos a postgres
-        'NAME': 'first_postgres_db', # nombre de la base de datos, se creará en el servidor de Postgres a continuación
+        'NAME': 'user_dashboard', # nombre de la base de datos, se creará en el servidor de Postgres a continuación
         'USER': 'postgres', # postgres para macOS o 'USER': 'postgres', para Windows
         'PASSWORD': 'root', # contraseña a la que la cambió al instalar Postgres
         'HOST': '127.0.0.1', # dirección IP localhost
