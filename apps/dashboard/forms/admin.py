@@ -54,7 +54,9 @@ class ChangePasswordForm(forms.ModelForm):
         confirm_password = cleaned_data.get("confirm_password")
 
         if password != confirm_password:
-            raise forms.ValidationError({"confirm_password": "Passwords don't match"})
+            raise forms.ValidationError({
+                "confirm_password": "Passwords don't match"
+            })
         errors = validate_registration_password(password)
         if errors:
             raise forms.ValidationError({"password": errors})
