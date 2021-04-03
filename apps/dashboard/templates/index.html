@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<main class="container">
+
+  <div class="bg-light border border-secondary border-3 p-4 my-4">
+    <h1>Welcome to the Test</h1>
+    <p class="fs-5 m-3">
+      We're going to build a cool application using a MVC framework!
+      This application was built by Jorge Espinoza.
+    </p>
+    <button class="btn btn-primary">Start</button>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Manage Users</h5>
+        </div>
+        <div class="card-body">
+          Using this application, you'll learn how to add, remove,
+          and edit users for the application.
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Leave messages</h5>
+        </div>
+        <div class="card-body">
+          Users will be able to leave a message to another user
+          using this application.</div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Edit User Information</h5>
+        </div>
+        <div class="card-body">
+          Admins will be able to edit another user's information
+          (email address, first name, last name, etc.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+{% endblock %}
