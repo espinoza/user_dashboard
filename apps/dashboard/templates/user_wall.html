@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% load crispy_forms_tags %}
+
+<h2>{{ user_showing.first_name }} {{ user_showing.last_name }}</h2>
+<table class="table">
+  <tr>
+    <th>Registered at:</th>
+    <td>{{ user_showing.created_at }}</td>
+  </tr>
+  <tr>
+    <th>User ID:</th>
+    <td>{{ user_showing.id }}</td>
+  </tr>
+  <tr>
+    <th>Email address:</th>
+    <td>{{ user_showing.email }}</td>
+  </tr>
+  <tr>
+    <th>Description:</th>
+    <td>{{ user_showing.description }}</td>
+  </tr>
+</table>
+
+<form action="{% url 'show_messages' user_showing.id %}" method="POST">
+  {% csrf_token %}
+  {{ message_form | crispy }}
+  <input type="submit" value="Post">
+</form>
+
+{% for message in messages %}
+<div class="card">
+  <div class="card-header fw-bold">
+    {{ message.sender_user.first_name }} {{ message.sender_user.last_name }}
+  </div>
+  <div class="card-body">
+    {{ message.content }}
+  </div>
+</div>
+<div class="ms-4">
+  {% for comment in message.comments.all %}
+  <div class="card">
+    <div class="card-header fw-bold">
+      {{ comment.user.first_name }} {{ comment.user.last_name }}
+    </div>
+    <div class="card-body">
+      {{ comment.content }}
+    </div>
+  </div>
+  {% endfor %}
+  <form action="{% url 'new_comment' user_showing.id %}" method="POST">
+    {% csrf_token %}
+    {{ comment_forms | get_item:message.id | crispy }}
+    <input type="submit" value="Post">
+  </form>
+</div>
+{% empty %}
+<p>There is no messages.</p>
+{% endfor %}
+
+{% endblock %}

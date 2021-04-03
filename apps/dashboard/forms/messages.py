@@ -16,7 +16,7 @@ class CommentForm(forms.ModelForm):
     message_commented_id = forms.IntegerField(widget=forms.HiddenInput())
 
     class Meta:
-        model = Message
+        model = Comment
         fields = ["content"]
         widgets = {"content": forms.Textarea(attrs={"rows": 3})}
         labels = {"content": ""}

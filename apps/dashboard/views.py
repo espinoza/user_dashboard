@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, HttpResponse
-from .models import User
+from .models import User, Message, Comment
 from .forms.access import LoginForm, RegisterForm
 from .forms.admin import EditUserForm, ChangePasswordForm
+from .forms.messages import MessageForm, CommentForm
 import bcrypt
+from django.template.defaulttags import register
 
 
 def index(request):
@@ -43,7 +45,7 @@ def logout(request):
     return redirect('/')
 
 
-def register(request):
+def registration(request):
 
     if request.method == "GET":
         if "user_id" in request.session:
@@ -216,6 +218,75 @@ def admin_remove_user(request, id):
     return redirect('/dashboard/admin')
 
 
+def show_messages(request, id):
+
+    if "user_id" not in request.session:
+        return redirect('/')
+
+    user = User.objects.filter(id=id)
+    if not user:
+        return redirect('/')
+
+    user_showing = user[0]
+    user_posting = User.objects.get(id=request.session["user_id"])
+
+    messages = user_showing.received_messages.order_by("-created_at")
+    comment_forms = create_comment_forms(messages)
+
+    if request.method == "GET":
+        message_form = MessageForm()
+
+    if request.method == "POST":
+        message_form = MessageForm(request.POST)
+        if message_form.is_valid():
+            posted_message = message_form.save(commit=False)
+            posted_message.recipient_user = user_showing
+            posted_message.sender_user = user_posting
+            posted_message.save()
+            return redirect('/users/show/' + str(id))
+
+    log_url, log_text = set_log_link(request.session)
+    context = {
+        "user_showing": user_showing,
+        "messages": messages,
+        "message_form": message_form,
+        "comment_forms": comment_forms,
+        "log_text": log_text,
+        "log_url": log_url
+    }
+
+    return render(request, "user_wall.html", context)
+
+
+def new_comment(request, user_showing_id):
+
+    if request.method == "GET":
+        return redirect('/')
+
+    if request.method == "POST":
+        message_commented_id = request.POST["message_commented_id"]
+        message_commented = Message.objects.get(id=message_commented_id)
+        print(message_commented.content)
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            comment.message = message_commented
+            comment.user = User.objects.get(id=request.session["user_id"])
+            print(user_showing_id, request.session["user_id"])
+            comment.save()
+
+    return redirect('/users/show/' + str(user_showing_id))
+
+
+def create_comment_forms(messages):
+    comment_forms = {}
+    for message in messages:
+        comment_forms[message.id] = CommentForm(
+            initial={"message_commented_id": message.id}
+        )
+    return comment_forms
+
+
 def set_log_link(request_session):
     if "user_id" in request_session:
         log_text = "Log out"
@@ -232,3 +303,9 @@ def not_allowed(action_string):
     response.write("<p>Ask another admin to do that.</p>")
     response.write("<p><a href='/dashboard/admin'>Go to dashboard</a></p>")
     return response
+
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
+
