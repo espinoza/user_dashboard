@@ -1,11 +1,24 @@
 from django.db import models
+from django.core.validators import MinLengthValidator
 
 class User(models.Model):
     email = models.CharField(max_length=255)
     password_hash = models.CharField(max_length=255)
     level = models.IntegerField()
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
+    first_name = models.CharField(
+        max_length=255,
+        validators=MinLengthValidator(
+            limit_value=2,
+            message="Too short first name"
+        )
+    )
+    last_name = models.CharField(
+        max_length=255,
+        validators=MinLengthValidator(
+            limit_value=2,
+            message="Too short last name"
+        )
+    )
     description = models.CharField(max_length=10000)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
