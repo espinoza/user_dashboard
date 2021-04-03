@@ -77,6 +77,48 @@ def register(request):
                                              "log_url": log_url})
 
 
+def dashboard_admin(request):
+
+    if "user_id" in request.session:
+        user = User.objects.filter(id=request.session["user_id"])
+        if user:
+            logged_user = user[0]
+
+            if logged_user.level == 9:
+                log_url, log_text = set_log_link(request.session)
+                users = User.objects.all()
+                context = {"users": users,
+                           "is_admin": True,
+                           "log_text": log_text,
+                           "log_url": log_url}
+                return render(request, "dashboard.html", context)
+            else:
+                return redirect('/dashboard')
+
+    return redirect('/')
+
+
+def dashboard(request):
+
+    if "user_id" in request.session:
+        user = User.objects.filter(id=request.session["user_id"])
+        if user:
+            logged_user = user[0]
+
+            if logged_user.level == 9:
+                return redirect('/dashboard/admin')
+            else:
+                log_url, log_text = set_log_link(request.session)
+                users = User.objects.all()
+                context = {"users": users,
+                           "is_admin": False,
+                           "log_text": log_text,
+                           "log_url": log_url}
+                return render(request, "dashboard.html", context)
+
+    return redirect('/')
+
+
 def set_log_link(request_session):
     if "user_id" in request_session:
         log_text = "Log out"
