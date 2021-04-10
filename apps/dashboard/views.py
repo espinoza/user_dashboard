@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse
 from .models import User, Message, Comment
 from .forms.access import LoginForm, RegisterForm
-from .forms.admin import EditUserForm, ChangePasswordForm
+from .forms.admin import EditUserForm, ChangePasswordForm, AddUserForm
 from .forms.messages import MessageForm, CommentForm
 import bcrypt
 from django.template.defaulttags import register
@@ -164,6 +164,38 @@ def admin_edit_user(request, id):
 
             else:
                 return redirect('/users/edit')
+
+    return redirect('/')
+
+
+def admin_add_user(request):
+
+    if "user_id" in request.session:
+        user = User.objects.filter(id=request.session["user_id"])
+        if user:
+            logged_user = user[0]
+
+            if logged_user.level == 9:
+
+                if request.method == "GET":
+                    add_user_form = AddUserForm()
+
+                if request.method == "POST":
+
+                    add_user_form = EditUserForm(request.POST)
+                    if add_user_form.is_valid():
+                        add_user_form.save()
+                        return redirect('/dashboard/admin')
+
+                log_url, log_text = set_log_link(request.session)
+                context = {"add_user_form": add_user_form,
+                           "log_text": log_text,
+                           "log_url": log_url}
+
+                return render(request, "add_user.html", context)
+
+            else:
+                return redirect('/dashboard')
 
     return redirect('/')
 

@@ -13,4 +13,5 @@ urlpatterns = [
     path('users/edit/<int:id>/remove', views.admin_remove_user, name='admin_remove_user'),
     path('users/show/<int:id>', views.show_messages, name="show_messages"),
     path('users/show/<int:user_showing_id>/comment', views.new_comment, name="new_comment"),
+    path('users/add', views.admin_add_user, name="admin_add_user"),
 ]
