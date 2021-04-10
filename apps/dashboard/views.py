@@ -184,7 +184,16 @@ def admin_add_user(request):
 
                     add_user_form = EditUserForm(request.POST)
                     if add_user_form.is_valid():
-                        add_user_form.save()
+                        password = request.POST["password"]
+                        pw_hash = bcrypt.hashpw(password.encode(),
+                                    bcrypt.gensalt()).decode()
+                        new_user = User()
+                        new_user.password_hash = pw_hash
+                        new_user.email = request.POST["email"]
+                        new_user.first_name = request.POST["first_name"]
+                        new_user.last_name = request.POST["last_name"]
+                        new_user.level = request.POST["level"]
+                        new_user.save()
                         return redirect('/dashboard/admin')
 
                 log_url, log_text = set_log_link(request.session)
